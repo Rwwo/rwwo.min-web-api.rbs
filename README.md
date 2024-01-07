@@ -1,7 +1,65 @@
-# ASP.NETcore: ImplementaÁ„o de seguranÁa baseada em funÁıes (Role Based Security) em uma aplicaÁ„o ASP.NET Core Minimal API.  
+# ASP.NETcore: Implementa√ß√£o de seguran√ßa baseada em fun√ß√µes (Role Based Security) em uma aplica√ß√£o ASP.NET Core Minimal API.  
 
-## ImplementaÁ„o de SeguranÁa Baseada em FunÁıes com ASP.NET Core Identity
+## Implementa√ß√£o de Seguran√ßa Baseada em Fun√ß√µes com ASP.NET Core Identity
 
-O ASP.NET Core Identity fornece uma estrutura robusta para gerenciamento de identidade do usu·rio em aplicativos ASP.NET Core,
-incluindo suporte para SeguranÁa Baseada em FunÁıes (Role Based Security - RBS). 
-Ao utilizar a interface IdentityDbContext, È possÌvel integrar facilmente a autenticaÁ„o e autorizaÁ„o baseada em funÁıes em sua aplicaÁ„o.
+O ASP.NET Core Identity fornece uma estrutura robusta para gerenciamento de identidade do usu√°rio em aplicativos ASP.NET Core,
+incluindo suporte para Seguran√ßa Baseada em Fun√ß√µes (Role Based Security - RBS). 
+Ao utilizar a interface IdentityDbContext, √© poss√≠vel integrar facilmente a autentica√ß√£o e autoriza√ß√£o baseada em fun√ß√µes em sua aplica√ß√£o.
+
+Para utilizar o Projeto: 
+* Registre um Usu√°rio no endpoint
+* Crie uma regra
+* Atribue a regra ao usu√°rio
+* Autentique o usu√°rio
+* Acesse o endpoint GetWeatherForecast
+
+
+###  Configura√ß√£o do DbContext:
+```
+public class SecurityDbContext : IdentityDbContext
+{
+    public SecurityDbContext(DbContextOptions<SecurityDbContext> options) : base(options)
+    {
+    }
+}
+
+```
+
+### Adi√ß√£o de Fun√ß√µes:
+
+```
+public static void ConfigureServices(this WebApplicationBuilder builder)
+{
+    builder.Services.AddDbContext<SecurityDbContext>(options =>
+    {
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    });
+
+    builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+        .AddEntityFrameworkStores<SecurityDbContext>();
+
+    builder.Services.AddScoped<SecurityServices>();
+
+    builder.Services.AddAuthentication();
+    builder.Services.AddAuthorizationBuilder()
+        .AddPolicy("read", policy => policy.RequireRole("user"));
+}
+```
+
+### Adi√ß√£o de Gerenciamento no EndPoint
+
+
+
+```
+app.MapGet("/GetWeatherForecast", () =>
+{
+  ...........
+})
+.WithName("GetWeatherForecast")
+.WithOpenApi()
+.RequireAuthorization("ler"); // A Autoriza√ß√£o com Pol√≠ticas
+```
+
+
+> [!NOTE]
+> Esse projeto foi desenvolvido apenas para fins de aprendizado
